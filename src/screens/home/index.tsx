@@ -3,9 +3,9 @@ import { View, Text } from 'react-native';
 import { styles } from './styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Card, CardProps } from '../../components/card';
-import { AspectRatio, FlatList, Image } from 'native-base';
+import { AspectRatio, FlatList, Image, Input } from 'native-base';
 import { useFocusEffect} from '@react-navigation/native'
-import coverImg from "../../assets/mario.jpg";
+import coverImg from "../../assets/street.jpg";
 type Props = {
   navigation: any
 }
@@ -32,10 +32,12 @@ export const Home = ({ navigation }: Props) => {
   }
   return (
     <View style={styles.container}>
-        <AspectRatio w="100%" h="250px" justifyContent={'flex-end'} paddingBottom={'20px'} flex={1}>
-          <Image source={coverImg} alt="coverimg" />
-          
-        </AspectRatio>
+      <View style={styles.header}>
+        <Image style={styles.img}source={coverImg} alt="coverimg" />
+        <Input  placeholder='Pesquisar'>
+        </Input>
+      </View>
+        
         <FlatList
           data={data}
           keyExtractor={item=>item.id}

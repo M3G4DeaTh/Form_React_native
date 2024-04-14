@@ -24,8 +24,10 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   sobrenome: {
-    fontSize: 13,
+    fontSize: 15,
+    lineHeight: 18,
     color: '#3D434D',
+    fontWeight: 'bold',
     
   },
   email: {
@@ -33,6 +35,11 @@ export const styles = StyleSheet.create({
     fontSize: 13,
   },
   cep: {
+    fontSize: 13,
+    color: '#3D434D',
+    
+  },
+  estado: {
     fontSize: 13,
     color: '#3D434D',
     

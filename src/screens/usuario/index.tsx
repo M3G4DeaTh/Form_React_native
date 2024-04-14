@@ -11,10 +11,12 @@ import Toast from 'react-native-tiny-toast';
 import uuid from 'react-native-uuid';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { RootTabParamList } from '../../router';
-import {ActivityIndicator} from 'react-native'
+import {ActivityIndicator, TouchableOpacity} from 'react-native'
 import { ExcluirItemDialog } from '../../components/dialog';
 import { CepController } from '../../components/cep/Controller/CepController';
 import CepModel from '../../components/cep/Model/CepModel';
+import { MaterialIcons } from '@expo/vector-icons';
+import { styles } from './styles';
 
 type FormDataProps = {
   id: any
@@ -51,6 +53,7 @@ export const Usuario = ({route, navigation}: UsuarioRouteProp) => {
   const[adress1, setAdress1] = useState('none');
   const[adress2, setAdress2] = useState('none');
   const[adress3, setAdress3] = useState('none');
+  const[idC, setId] = useState('none');
   const [ceps, setCeps] = useState<CepModel[]>([]);
   const isEditing = !!route?.params?.id;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -62,6 +65,10 @@ export const Usuario = ({route, navigation}: UsuarioRouteProp) => {
     }
     else{
       reset();
+      setAdress0('none')
+      setAdress1('none')
+      setAdress2('none')
+      setAdress3('none')
       setLoading(false);
       setSearchID(false);
     }
@@ -71,6 +78,10 @@ export const Usuario = ({route, navigation}: UsuarioRouteProp) => {
     if(route?.params?.id) handlerSearcher(route?.params?.id)
     else{
       reset();
+      setAdress0('none')
+      setAdress1('none')
+      setAdress2('none')
+      setAdress3('none')
       setLoading(false);
     }
     return ()=> setLoading(true);
@@ -102,8 +113,10 @@ export const Usuario = ({route, navigation}: UsuarioRouteProp) => {
       setLoading(true)
       const responseData = await AsyncStorage.getItem('@crud_form:usuario')
       const dbData: FormDataProps[] = responseData? JSON.parse(responseData): [];
+      
       const itemEncontrado = dbData?.find(item => item.id === id)
       if(itemEncontrado){
+        setId(id)
         Object.keys(itemEncontrado).forEach((key)=> setValue(
           key as keyof FormDataProps,
         itemEncontrado?.[key as keyof FormDataProps] as string)
@@ -135,10 +148,23 @@ export const Usuario = ({route, navigation}: UsuarioRouteProp) => {
       const cep = data.cep
       const responseCep = handlerSeacherCep(cep)
 
-      setAdress0(ceps[0].logradouro)
-      setAdress1(ceps[0].bairro)
-      setAdress2(ceps[0].localidade)
-      setAdress3(ceps[0].uf)
+      
+      if (idC != 'none'){
+        data.id = idC
+      }
+      else{
+        setId(data.id)
+      }
+      setAdress0(ceps[ceps.length-1].logradouro)
+      setAdress1(ceps[ceps.length-1].bairro)
+      setAdress2(ceps[ceps.length-1].localidade)
+      setAdress3(ceps[ceps.length-1].uf)
+      data.bairro = adress1
+      data.cidade = adress2
+      data.estado = adress3
+      data.rua = adress0
+      
+
 
     }catch(e){
       console.log(e)
@@ -149,6 +175,7 @@ export const Usuario = ({route, navigation}: UsuarioRouteProp) => {
     try{
       const responseData = await AsyncStorage.getItem('@crud_form:usuario')
       const dbData: FormDataProps[] = responseData? JSON.parse(responseData): [];
+      
       const indexRemove = dbData?.findIndex(item => item.id === data.id)
       if(indexRemove !== -1){
         dbData.splice(indexRemove, 1);
@@ -158,6 +185,7 @@ export const Usuario = ({route, navigation}: UsuarioRouteProp) => {
         setLoading(false);
         setSearchID(false);
         reset();
+
         handleList();
       }else{
         Toast.show("Registro não localizado")
@@ -169,6 +197,7 @@ export const Usuario = ({route, navigation}: UsuarioRouteProp) => {
     }
   }
   function handleList() {
+    reset();
     navigation.navigate('Home');
   }
   async function handleDelete(data:FormDataProps) {
@@ -185,6 +214,7 @@ export const Usuario = ({route, navigation}: UsuarioRouteProp) => {
         setShowDeleteDialog(false);
         setSearchID(false);
         reset();
+
         handleList();
       }else{
         Toast.show("Registro não localizado")
@@ -254,7 +284,17 @@ export const Usuario = ({route, navigation}: UsuarioRouteProp) => {
             />
             )}
           />
-          <Button title='Buscar' color='green.700' onPress={handleSubmit(handlerCep)} />
+          {/* <Button title='Buscar' color='green.700' onPress={} /> */}
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleSubmit(handlerCep)}
+          >
+            <MaterialIcons
+              name="search"
+              size={22}
+              color="#888D97"
+            />
+          </TouchableOpacity>
           {searcheID ? (
             <Controller 
             control={control}
@@ -275,15 +315,15 @@ export const Usuario = ({route, navigation}: UsuarioRouteProp) => {
             <Controller 
             control={control}
             name="rua"
-            defaultValue=''
-            render={({field: {onChange}})=>(
+            defaultValue={adress0}
+            render={({field: {onChange, value}})=>(
               <Input
-                placeholder='Rua'
+                placeholder={adress0}
                 onChangeText={onChange}
-                
+                editable={false}
                 errorMessage={errors.rua?.message}
+                value={value = adress0}
                 
-                value={adress0}
               />
             )}
             />
@@ -322,14 +362,14 @@ export const Usuario = ({route, navigation}: UsuarioRouteProp) => {
             <Controller 
             control={control}
             name="bairro"
-            defaultValue=''
-            render={({field: {onChange}})=>(
+            defaultValue={adress1}
+            render={({field: {onChange, value}})=>(
               <Input
-                placeholder='Bairro'
+                placeholder={adress1}
                 onChangeText={onChange}
-                
+                editable={false}
                 errorMessage={errors.bairro?.message}
-                value={adress1}
+                value={value = adress1}
               />
             )}
             />
@@ -353,14 +393,14 @@ export const Usuario = ({route, navigation}: UsuarioRouteProp) => {
             <Controller 
             control={control}
             name="cidade"
-            defaultValue=''
-            render={({field: {onChange}})=>(
+            defaultValue={adress2}
+            render={({field: {onChange, value}})=>(
             <Input
-              placeholder='Cidade'
+              placeholder={adress2}
               onChangeText={onChange}
-              
+              editable={false}
               errorMessage={errors.cidade?.message}
-              value={adress2}
+              value={value = adress2}
             />
             )}
           />
@@ -384,14 +424,14 @@ export const Usuario = ({route, navigation}: UsuarioRouteProp) => {
             <Controller 
             control={control}
             name="estado"
-            defaultValue=''
-            render={({field: {onChange}})=>(
+            defaultValue={adress3}
+            render={({field: {onChange, value }})=>(
             <Input
-              placeholder='Estado'
+              placeholder={adress3}
               onChangeText={onChange}
-              
+              editable={false}
               errorMessage={errors.estado?.message}
-              value={adress3}
+              value={value = adress3}
             />
             )}
           />

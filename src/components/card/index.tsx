@@ -35,9 +35,21 @@ export function Card({ data, onPress }: Props) {
         <View>
           <Text style={styles.nome}>
             {data.nome}
+            
           </Text>
-          <Text style={styles.rua}>
-            {data.rua}
+          <Text style={styles.estado}>
+            {data.estado}
+          </Text>
+
+        </View>
+      </View>
+      <View style={styles.content}>
+        <View>
+        <Text style={styles.cep}>
+            {data.cep}
+          </Text>
+          <Text style={styles.cidade}>
+            {data.cidade}
           </Text>
 
         </View>
