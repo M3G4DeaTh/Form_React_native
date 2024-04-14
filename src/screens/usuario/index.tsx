@@ -13,22 +13,32 @@ import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { RootTabParamList } from '../../router';
 import {ActivityIndicator} from 'react-native'
 import { ExcluirItemDialog } from '../../components/dialog';
+import { CepController } from '../../components/cep/Controller/CepController';
+import CepModel from '../../components/cep/Model/CepModel';
 
 type FormDataProps = {
   id: any
   nome:string;
+  sobrenome:string;
   email:string;
-  senha:string;
-  confirmaSenha: string;
+  cep:string;
+  rua:string;
+  numero:string;
+  bairro: string;
+  cidade: string;
+  estado: string;
 }
 
 const schemaRegister = yup.object({
   nome: yup.string().required("Nome é obrigatório").min(3, "Informe no minimo 3 digitos"),
+  sobrenome: yup.string().required("sobrenome é obrigatório").min(3, "Informe no minimo 3 digitos"),
   email: yup.string().required("Email é obrigatório").min(6, "Informe no minimo 6 digitos").email("E-mail informado não é valido"),
-  senha: yup.string().required("Senha é obrigatório").min(3, "Informe no minimo 3 digitos"),
-  confirmaSenha: yup.string()
-    .required("Confirmação de senha é obrigatório")
-    .oneOf([yup.ref('senha')], "As senha devem coindir"),
+  cep: yup.string().required("Cep é obrigatorio").min(8,"Infome no minimo 8 digitos"),
+  rua: yup.string(),
+  numero: yup.string(),
+  bairro: yup.string(),
+  cidade: yup.string(),
+  estado: yup.string()
 })
 type UsuarioRouteProp = BottomTabScreenProps<RootTabParamList, 'Usuario'>;
 export const Usuario = ({route, navigation}: UsuarioRouteProp) => {
@@ -37,6 +47,11 @@ export const Usuario = ({route, navigation}: UsuarioRouteProp) => {
       resolver: yupResolver(schemaRegister) as any
   });
   const[loading, setLoading] = useState(true);
+  const[adress0, setAdress0] = useState('none');
+  const[adress1, setAdress1] = useState('none');
+  const[adress2, setAdress2] = useState('none');
+  const[adress3, setAdress3] = useState('none');
+  const [ceps, setCeps] = useState<CepModel[]>([]);
   const isEditing = !!route?.params?.id;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [searcheID, setSearchID] = useState(false);
@@ -80,6 +95,7 @@ export const Usuario = ({route, navigation}: UsuarioRouteProp) => {
 
 
   }
+  
 
   async function handlerSearcher(id:string) {
     try{
@@ -97,6 +113,36 @@ export const Usuario = ({route, navigation}: UsuarioRouteProp) => {
     }catch(e){
       console.log(e)
       setSearchID(false);
+    }
+  }
+  async function handlerCep(data:FormDataProps) {
+    const handlerSeacherCep= async (cep: string)=>{
+      try{
+          setLoading(true);
+          await CepController.fetchCep(cep);
+          const newCeps = [...CepController.getCeps()];
+          setCeps(newCeps)
+      }catch(error){
+          console.error('Erro fetching data:', error)
+      }finally{
+          setLoading(false);
+      }
+    }
+    data.id = uuid.v4().toString();
+    
+    try{
+      // setLoading(true)
+      const cep = data.cep
+      const responseCep = handlerSeacherCep(cep)
+
+      setAdress0(ceps[0].logradouro)
+      setAdress1(ceps[0].bairro)
+      setAdress2(ceps[0].localidade)
+      setAdress3(ceps[0].uf)
+
+    }catch(e){
+      console.log(e)
+
     }
   }
   async function handlerAlterRegister(data:FormDataProps) {
@@ -171,6 +217,19 @@ export const Usuario = ({route, navigation}: UsuarioRouteProp) => {
           />
           <Controller 
             control={control}
+            name="sobrenome"
+            defaultValue=''
+            render={({field: {onChange, value}})=>(
+            <Input
+              placeholder='Sobrenome'
+              onChangeText={onChange}
+              errorMessage={errors.sobrenome?.message}
+              value={value}
+            />
+            )}
+          />
+          <Controller 
+            control={control}
             name="email"
             defaultValue=''
             render={({field: {onChange, value}})=>(
@@ -184,32 +243,160 @@ export const Usuario = ({route, navigation}: UsuarioRouteProp) => {
           />
           <Controller 
             control={control}
-            name="senha"
+            name="cep"
             defaultValue=''
             render={({field: {onChange, value}})=>(
             <Input
-              placeholder='Senha'
+              placeholder='Cep'
               onChangeText={onChange}
-              secureTextEntry
-              errorMessage={errors.senha?.message}
+              errorMessage={errors.cep?.message}
               value={value}
             />
             )}
           />
+          <Button title='Buscar' color='green.700' onPress={handleSubmit(handlerCep)} />
+          {searcheID ? (
+            <Controller 
+            control={control}
+            name="rua"
+            defaultValue=''
+            render={({field: {onChange, value}})=>(
+              <Input
+                placeholder='Rua'
+                onChangeText={onChange}
+                
+                errorMessage={errors.rua?.message}
+                
+                value={value}
+              />
+            )}
+            />
+          ):(
+            <Controller 
+            control={control}
+            name="rua"
+            defaultValue=''
+            render={({field: {onChange}})=>(
+              <Input
+                placeholder='Rua'
+                onChangeText={onChange}
+                
+                errorMessage={errors.rua?.message}
+                
+                value={adress0}
+              />
+            )}
+            />
+          )}
+          
           <Controller 
             control={control}
-            name="confirmaSenha"
+            name="numero"
+            defaultValue=''
+            render={({field: {onChange, value}})=>(
+              <Input
+                placeholder='Numero'
+                onChangeText={onChange}
+                
+                errorMessage={errors.numero?.message}
+                value={value}
+              />
+            )}
+          />
+          {searcheID ? (
+            <Controller 
+            control={control}
+            name="bairro"
+            defaultValue=''
+            render={({field: {onChange, value}})=>(
+              <Input
+                placeholder='Bairro'
+                onChangeText={onChange}
+                
+                errorMessage={errors.bairro?.message}
+                value={value}
+              />
+            )}
+            />
+          ):(
+            <Controller 
+            control={control}
+            name="bairro"
+            defaultValue=''
+            render={({field: {onChange}})=>(
+              <Input
+                placeholder='Bairro'
+                onChangeText={onChange}
+                
+                errorMessage={errors.bairro?.message}
+                value={adress1}
+              />
+            )}
+            />
+          )}
+          {searcheID ?(
+            <Controller 
+            control={control}
+            name="cidade"
             defaultValue=''
             render={({field: {onChange, value}})=>(
             <Input
-              placeholder='Confirma Senha'
+              placeholder='Cidade'
               onChangeText={onChange}
-              secureTextEntry
-              errorMessage={errors.confirmaSenha?.message}
+              
+              errorMessage={errors.cidade?.message}
               value={value}
             />
             )}
           />
+          ):(
+            <Controller 
+            control={control}
+            name="cidade"
+            defaultValue=''
+            render={({field: {onChange}})=>(
+            <Input
+              placeholder='Cidade'
+              onChangeText={onChange}
+              
+              errorMessage={errors.cidade?.message}
+              value={adress2}
+            />
+            )}
+          />
+          )}
+          {searcheID ? (
+            <Controller 
+            control={control}
+            name="estado"
+            defaultValue=''
+            render={({field: {onChange, value}})=>(
+            <Input
+              placeholder='Estado'
+              onChangeText={onChange}
+              
+              errorMessage={errors.estado?.message}
+              value={value}
+            />
+            )}
+          />
+          ):(
+            <Controller 
+            control={control}
+            name="estado"
+            defaultValue=''
+            render={({field: {onChange}})=>(
+            <Input
+              placeholder='Estado'
+              onChangeText={onChange}
+              
+              errorMessage={errors.estado?.message}
+              value={adress3}
+            />
+            )}
+          />
+          )}
+          
           {searcheID ? (
             <VStack>
             <HStack>

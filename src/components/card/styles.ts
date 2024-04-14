@@ -23,18 +23,38 @@ export const styles = StyleSheet.create({
     color: '#3D434D',
     fontWeight: 'bold',
   },
+  sobrenome: {
+    fontSize: 13,
+    color: '#3D434D',
+    
+  },
   email: {
     color: '#888D97',
     fontSize: 13,
   },
+  cep: {
+    fontSize: 13,
+    color: '#3D434D',
+    
+  },
+  rua: {
+    fontSize: 13,
+    color: '#3D434D'
+    
+  },
+  cidade: {
+    fontSize: 13,
+    color: '#3D434D',
+    
+  },
+  numero: {
+    fontSize: 13,
+    color: '#3D434D',
+    
+  },
   user: {
     color: '#888D97',
     fontSize: 13,
-  },
-  password: {
-    color: '#1967FB',
-    fontSize: 15,
-    fontWeight: 'bold',
   },
   button: {
     height: 80,
